@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+gimport matplotlib.pyplot as plt
 import pandas as pd
 import os
 import numpy as np
@@ -25,21 +25,20 @@ def run_rgrs(df, regressors, features, targets):
 pathname = './data'
 data = np.load(os.path.join(pathname, 'preprocessed_continuous_5.npy'))[0]
 
-features_amount = [#'Security',
-            #'Declared_Date',
-            #'Dividend_Amount',
-            #'Ex_Date',
-            'ALTMAN_Z_SCORE',
-            'ROC_WACC_RATIO',
-            'WACC',
-            'WACC_ECON_VALUE_ADDED',
-            'WACC_EVA_SPREAD',
-            'WACC_NOPAT',
-            'Dividend_Frequency_Annual',
-            #'Dividend_Frequency_Semi_Anl',
-            'Dividend_Type_Final',
-            'Dividend_Type_Interim',
-            'Dividend_Type_Regular_Cash',
+features_amount = [#'Region',
+            #'IO_date',
+            #'Campaign_rev',
+            #'End_date',
+            '***',
+            '***',
+            '***',
+            '***',
+            '***',
+            '***',
+            '***',
+            '***',
+            '***',
+            '***',
             'BICS_LEVEL_1_SECTOR_NAME_Communications',
             'BICS_LEVEL_1_SECTOR_NAME_Consumer_Discretionary',
             'BICS_LEVEL_1_SECTOR_NAME_Consumer_Staples',
@@ -50,43 +49,27 @@ features_amount = [#'Security',
             'BICS_LEVEL_1_SECTOR_NAME_Materials',
             'BICS_LEVEL_1_SECTOR_NAME_Technology',
             'BICS_LEVEL_1_SECTOR_NAME_Utilities',
-            'CNTRY_OF_RISK_CN',
-            'CNTRY_OF_RISK_HK',
-            #'Omit',
-            #'New_Label',
-            #'Ex_Date_Change',
-            #'Ex_Date_Change_Target',
-            #'Dividend_Amount_Target',
-            #'Omit_Target',
-            #'Ex_Date_Change_Lagged_1',
-            #'Ex_Date_Change_Lagged_2',
-            #'Ex_Date_Change_Lagged_3',
-            #'Ex_Date_Change_Lagged_4',
-            #'Ex_Date_Change_Lagged_5',
-            'Dividend_Amount_Lagged_1',
-            'Dividend_Amount_Lagged_2',
-            'Dividend_Amount_Lagged_3',
-            'Dividend_Amount_Lagged_4',
-            'Dividend_Amount_Lagged_5',
-            #'Omit_Lagged_1',
-            #'Omit_Lagged_2',
-            #'Omit_Lagged_3',
-            #'Omit_Lagged_4',
-            #'Omit_Lagged_5'
+            '***',
+            '***',
+            '***',
+            '***',
+            '***',
+            '***',
+            '***',
             ]
 
 
 ############ linear regression ############
 from sklearn.linear_model import LinearRegression
 rgs_lr = [LinearRegression()]
-pt_lr = run_rgrs(data, regressors=rgs_lr, features=features_amount, targets=['Dividend_Amount_Target'])
+pt_lr = run_rgrs(data, regressors=rgs_lr, features=features_amount, targets=['Campaign_rev'])
 ############ linear regression ############
 
 
 ############ random forest ############
 from sklearn.ensemble import RandomForestRegressor
 rgs_rf = [RandomForestRegressor(max_depth=5, n_estimators=30)]
-pt_rf = run_rgrs(data, regressors=rgs_rf, features=features_amount, targets=['Dividend_Amount_Target'])
+pt_rf = run_rgrs(data, regressors=rgs_rf, features=features_amount, targets=['Campaign_rev'])
 ############ random forest ############
 
 
@@ -163,7 +146,7 @@ rdp = 0.3
 print("\n\n===============================\nnum_cells=%d\tbatch_sizes=%d" %(nc, bs))
 optimizer = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
 #optimizer = 'adam'
-result_lstm = run_LSTM(data, features_amount, 5, 'Dividend_Amount', optimizer=optimizer, early_stop=True, 
+result_lstm = run_LSTM(data, features_amount, 5, 'Campaign_rev', optimizer=optimizer, early_stop=True, 
                                    num_cell=nc, bs=bs, dropout=dp, recurrent_dropout=rdp)
 plot_loss(result_lstm[1], title='dp=%.1f rdp=%.1f cell=%d' %(dp, rdp, nc))
 ############ LSTM ############
