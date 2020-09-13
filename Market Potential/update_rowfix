@@ -1,0 +1,46 @@
+print('start.')
+import pandas as pd
+import numpy as np
+import openpyxl as xl
+
+folder = "C:/Users/fding/Desktop/BI Tasks/Monthly/Market Potential/May"
+rowfix_file = "/rowfix.xlsx"
+order_file = "/Orders 6.23.xlsx"
+
+rowfix = pd.read_excel(folder+rowfix_file)
+rowfix=rowfix[rowfix['Month Date'] <'2020-04-01']
+
+rowfix_new = pd.read_excel(folder+order_file,'working')
+rowfix_new = rowfix_new[['Station','Organization','Market','Advertiser','Campaign Name','Media','Platform','End Date','Live Date','Month Date','Impressions','Retail_Cost','License_Fee','ZM Revenue','Status']]
+
+## add quarter column
+def col_Quarter(df):
+    if pd.notnull(df['Month Date']):
+        return (str(pd.Timestamp(df['Month Date']).year) + '-Q' + str(pd.Timestamp(df['Month Date']).quarter))
+
+rowfix_new['Quarter'] = rowfix_new.apply(col_Quarter,axis = 1)
+
+## add blank column
+rowfix_new['Mapping'] = rowfix_new.apply(lambda _: '', axis=1)
+rowfix_new.head()
+
+## add product column
+def col_Product(df):
+    if 'Video' in df["Media"] and '_OTT_V2_Video' in df['Campaign Name']:
+        return 'OTT'
+    if '_CDV_BLEND' in df['Campaign Name'].upper():
+        return 'CDV'
+    if 'Display' in df["Media"]:
+        return 'Display'
+    else:
+        return 'Video'
+
+rowfix_new['Product'] = rowfix_new.apply(col_Product, axis=1)
+
+## append
+rowfix_total = rowfix.append(rowfix_new)
+print(rowfix_total.shape[0] , rowfix.shape[0], rowfix_new.shape[0])
+
+rowfix_total.to_excel(folder + '/new/' + 'rowfix.xlsx', index = False)
+
+print('new rowfix created.')
