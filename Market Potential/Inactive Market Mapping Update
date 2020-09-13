@@ -1,0 +1,70 @@
+import pandas as pd
+import numpy as np
+import openpyxl as xl
+
+folder = "C:/Users/fding/Desktop/BI Tasks/Monthly/Market Potential/May"
+rowfix_file = "/new/rowfix.xlsx"
+inactive_mapping_file = "/inactive_mapping.xlsx"
+
+agency_dic = {'IHM(DMA)': ['U.S.', 'CHATTANOOGA', 'RICHMOND-PETERSBURG'],
+             'Sinclair(DMA)': ['U.S.', 'LAFAYETTE, IN', 'MERIDIAN', 'JACKSON, TN', 'FS Detroit', 'FS Florida', 'FS Ohio', 'FS Arizona', 'FS West', 'NEW ORLEANS','FS Midwest', 'FS Southwest', 'FS North'],
+             'CBS(DMA)': ['SEATTLE-TACOMA', 'TAMPA-ST. PETE (SARASOTA)', 'ATLANTA'],
+             'Graham(DMA)': ['MIAMI-FT. LAUDERDALE'],
+             'Nexstar(DMA)': ['MIAMI-FT. LAUDERDALE', 'NEW YORK', 'PHOENIX (PRESCOTT)', 'BALTIMORE', 'BILOXI-GULFPORT', 'LINCOLN & HASTINGS-KRNY', 'OMAHA'],
+             'Euclid Media(DMA)': ['CORPUS CHRISTI', 'HARTFORD & NEW HAVEN'],
+             'Calkins(DMA)': ['ALBANY-SCHENECTADY-TROY'],
+             'Tribune(DMA)': ['ORLANDO-DAYTONA BCH-MELBRN']}
+
+partner_dic = {'iHeartMedia': 'IHM(DMA)',
+              'Sinclair Digital Group': 'Sinclair(DMA)',
+              'Univision': 'Univision(DMA)',
+              'CBS ONO': 'CBS(DMA)',
+              'Cumulus': 'Cumulus(DMA)',
+              'Graham Media': 'Graham(DMA)',
+              'Cunningham Media': 'Cunningham(DMA)',
+              'Max Media': 'Max Media(DMA)',
+              'Hubbard Radio': 'Hubbard(DMA)',
+              'Morgan Murphy Media': 'Morgan Murphy(DMA)',
+              'Nexstar Digital': 'Nexstar(DMA)',
+              'Euclid Media Group': 'Euclid Media(DMA)'}
+
+rowfix = pd.read_excel(folder + rowfix_file)
+inactive_mapping = pd.read_excel(folder + inactive_mapping_file)
+
+## get key from dictionary
+def get_key(val):
+    for key, value in partner_dic.items():
+        if val == value:
+            return key
+    return 'Key does not exist'
+
+
+## update the status column
+for key in partner_dic:
+    for x in inactive_mapping[partner_dic[key]]:
+        if x is not np.nan:
+            if str(max(rowfix[(rowfix['Organization'] == get_key(partner_dic[key])) & (rowfix['Mapping']==x)]['Month Date'], default = '1820-01-01 00:00:00')) >= '2020-01-01 00:00:00':
+                inactive_mapping.iloc[inactive_mapping[inactive_mapping[partner_dic[key]] == x].index[0],inactive_mapping.columns.get_loc(partner_dic[key])+1] = 'Active 2020'
+            elif str(max(rowfix[(rowfix['Organization'] == get_key(partner_dic[key])) & (rowfix['Mapping']==x)]['Month Date'], default = '7020-01-01 00:00:00')) < '2020-01-01 00:00:00':
+                inactive_mapping.iloc[inactive_mapping[inactive_mapping[partner_dic[key]] == x].index[0],inactive_mapping.columns.get_loc(partner_dic[key])+1] = 'Active before 2020'
+            else: 
+                inactive_mapping.iloc[inactive_mapping[inactive_mapping[partner_dic[key]] == x].index[0],inactive_mapping.columns.get_loc(partner_dic[key])+1] = '*'
+
+
+## check whether we have new markets
+for key in partner_dic:
+    rowfix_a=rowfix.loc[(rowfix['Organization'] == get_key(partner_dic[key])) & (rowfix['Month Date'] >= '2020-01-01 00:00:00')]['Mapping'].unique()
+    for item in rowfix_a:
+        if item not in inactive_mapping[partner_dic[key]].unique():
+            inactive_mapping.loc[inactive_mapping[partner_dic[key]].count(),[partner_dic[key],partner_dic[key] + 'Status']] = [item, 'New Markets-Active 2020']
+
+
+## add agency
+for key, values in agency_dic.items():
+    for x in values:
+        if x in inactive_mapping[key].unique():
+            inactive_mapping.iloc[inactive_mapping[inactive_mapping[key] == x].index[0], inactive_mapping.columns.get_loc(key)+1] = 'Agency-' + inactive_mapping.iloc[inactive_mapping[inactive_mapping[key] == x].index[0], inactive_mapping.columns.get_loc(key)+1]
+
+
+inactive_mapping.to_excel(folder + '/new/' + 'inactive_mapping.xlsx', index = False)
+print('new inactive mapping created')
